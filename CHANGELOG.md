@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v1.0.1 - 2020-02-25
+
+### Changed
+
+- Updated gihtub.com/micro/go-micro/v2 from 2.1.1 to 2.1.2
+
 ## v1.0.0 - 2020-02-21
 
 - Initial release
