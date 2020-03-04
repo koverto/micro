@@ -23,7 +23,11 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 	parts := strings.Split(id, ".")
 	name := parts[len(parts)-1]
 
-	service := micro.NewService(micro.Name(name))
+	service := micro.NewService(
+		micro.Name(name),
+		micro.WrapClient(requestIDClientWrapper),
+		micro.WrapHandler(requestIDHandlerWrapper),
+	)
 	service.Init()
 
 	if conf != nil {

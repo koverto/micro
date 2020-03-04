@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+### Added
+
+- Add request ID to metadata of outgoing gRPC calls
+- Extract request ID from metadata of incoming gRPC calls
+
 ## v1.1.0 - 2020-03-04
 
 ### Added
