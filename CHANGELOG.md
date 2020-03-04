@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v1.1.0 - 2020-03-04
+
+### Added
+
+- `ContextWithRequestID(ctx context.Context, rid *uuid.UUID) context.Context`
+- `RequestIDFromContext(ctx context.Context) *uuid.UUID`
+
+### Changed
+
+- Updated github.com/micro/go-micro/v2 from 2.1.2 to 2.2.0
+
 ## v1.0.1 - 2020-02-25
 
 ### Changed
