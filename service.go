@@ -1,7 +1,6 @@
 package micro
 
 import (
-	"strings"
 	"time"
 
 	"github.com/micro/go-micro/v2"
@@ -15,17 +14,13 @@ import (
 type Service struct {
 	micro.Service
 	Name string
-	ID   string
 }
 
 // NewService initializes a new microservice instance with the given identifier
 // (e.g. com.example.svc.greeter), and given a configuration struct containing
 // default values, loads configuration values from the given sources into the
 // struct.
-func NewService(id string, conf interface{}, sources ...source.Source) (*Service, error) {
-	parts := strings.Split(id, ".")
-	name := parts[len(parts)-1]
-
+func NewService(name string, conf interface{}, sources ...source.Source) (*Service, error) {
 	service := micro.NewService(
 		micro.Name(name),
 		micro.WrapClient(
@@ -43,7 +38,7 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 		micro_zerolog.UseAsDefault(),
 		log.WithFields(map[string]interface{}{
 			"node":    service.Server().Options().Id,
-			"service": id,
+			"service": name,
 		}),
 		micro_zerolog.WithTimeFormat(time.RFC3339Nano),
 	)
@@ -58,5 +53,5 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 		}
 	}
 
-	return &Service{service, name, id}, nil
+	return &Service{service, name}, nil
 }

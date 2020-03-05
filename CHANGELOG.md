@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v1.3.0 - 2020-03-05
+
+### Changed
+
+- Service name is now full identifier
+
+### Removed
+
+- `Service.ID` (now `Service.Name`)
+
 ## v1.2.1 - 2020-03-05
 
 ### Added
