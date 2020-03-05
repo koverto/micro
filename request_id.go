@@ -17,8 +17,9 @@ func ContextWithRequestID(ctx context.Context, rid *uuid.UUID) context.Context {
 	return context.WithValue(ctx, ridContextKey{}, rid)
 }
 
-func RequestIDFromContext(ctx context.Context) *uuid.UUID {
-	return ctx.Value(ridContextKey{}).(*uuid.UUID)
+func RequestIDFromContext(ctx context.Context) (*uuid.UUID, bool) {
+	id, ok := ctx.Value(ridContextKey{}).(*uuid.UUID)
+	return id, ok
 }
 
 func requestIDHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
@@ -45,7 +46,7 @@ func requestIDClientWrapper(c client.Client) client.Client {
 }
 
 func (w *_requestIDClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	if rid := RequestIDFromContext(ctx); rid != nil {
+	if rid, ok := RequestIDFromContext(ctx); ok {
 		ctx = metadata.Set(ctx, REQUEST_ID_METADATA_KEY, rid.Uuid.String())
 	}
 

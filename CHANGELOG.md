@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog][], and this project adheres to
 - Use [zerolog](https://github.com/rs/zerolog) for structured logging
 - Add service ID and node ID fields to all logging outputs
 
+### Changed
+
+- `RequestIDFromContext` now returns `(*uuid.UUID, bool)` from type assertion
+
 ## v1.1.0 - 2020-03-04
 
 ### Added
