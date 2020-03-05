@@ -28,8 +28,14 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 
 	service := micro.NewService(
 		micro.Name(name),
-		micro.WrapClient(requestIDClientWrapper),
-		micro.WrapHandler(requestIDHandlerWrapper),
+		micro.WrapClient(
+			requestIDClientWrapper,
+			logClientWrapper,
+		),
+		micro.WrapHandler(
+			requestIDHandlerWrapper,
+			logHandlerWrapper,
+		),
 	)
 	service.Init()
 
@@ -54,4 +60,3 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 
 	return &Service{service, name, id}, nil
 }
-

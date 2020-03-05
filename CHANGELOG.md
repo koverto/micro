@@ -7,11 +7,14 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v1.2.0 - 2020-03-05
+
 ### Added
 
 - Pass request ID between services via gRPC metadata
 - Use [zerolog](https://github.com/rs/zerolog) for structured logging
 - Add service ID and node ID fields to all logging outputs
+- Log all incoming and outgoing gRPC calls with request ID and duration
 
 ### Changed
 
