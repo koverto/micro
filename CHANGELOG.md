@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v1.2.1 - 2020-03-05
+
+### Added
+
+- gRPC call errors are now logged under `"grpc.error"`
+
 ## v1.2.0 - 2020-03-05
 
 ### Added

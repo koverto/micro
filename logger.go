@@ -18,6 +18,7 @@ type request interface {
 const (
 	durationLogKey     = "duration_ms"
 	grpcEndpointLogKey = "grpc.endpoint"
+	grpcErrorLogKey    = "grpc.error"
 	grpcServiceLogKey  = "grpc.service"
 	grpcSpanLogKey     = "grpc.span"
 	requestIdLogKey    = "request_id"
@@ -35,6 +36,7 @@ func logHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		event.Str(grpcSpanLogKey, grpcServiceServer)
 
 		err := fn(ctx, req, rsp)
+		event.AnErr(grpcErrorLogKey, err)
 		event.Dur(durationLogKey, time.Since(now)).Send()
 
 		return err
@@ -54,6 +56,7 @@ func (w *_logClientWrapper) Call(ctx context.Context, req client.Request, rsp in
 	event.Str(grpcSpanLogKey, grpcServiceClient)
 
 	err := w.Client.Call(ctx, req, rsp, opts...)
+	event.AnErr(grpcErrorLogKey, err)
 	event.Dur(durationLogKey, time.Since(now)).Send()
 
 	return err
