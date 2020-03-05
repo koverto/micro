@@ -9,7 +9,7 @@ import (
 	"github.com/micro/go-micro/v2/server"
 )
 
-const REQUEST_ID_METADATA_KEY = "request_id"
+const requestIDMetadataKey = "request_id"
 
 type ridContextKey struct{}
 
@@ -24,7 +24,7 @@ func RequestIDFromContext(ctx context.Context) (*uuid.UUID, bool) {
 
 func requestIDHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-		if rid, ok := metadata.Get(ctx, REQUEST_ID_METADATA_KEY); ok {
+		if rid, ok := metadata.Get(ctx, requestIDMetadataKey); ok {
 			rid, err := uuid.Parse(rid)
 			if err != nil {
 				return err
@@ -47,7 +47,7 @@ func requestIDClientWrapper(c client.Client) client.Client {
 
 func (w *_requestIDClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	if rid, ok := RequestIDFromContext(ctx); ok {
-		ctx = metadata.Set(ctx, REQUEST_ID_METADATA_KEY, rid.Uuid.String())
+		ctx = metadata.Set(ctx, requestIDMetadataKey, rid.Uuid.String())
 	}
 
 	return w.Client.Call(ctx, req, rsp, opts...)
