@@ -2,10 +2,13 @@ package micro
 
 import (
 	"strings"
+	"time"
 
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/config"
 	"github.com/micro/go-micro/v2/config/source"
+	log "github.com/micro/go-micro/v2/logger"
+	micro_zerolog "github.com/micro/go-plugins/logger/zerolog/v2"
 )
 
 // Service represents a microservice definition.
@@ -30,6 +33,15 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 	)
 	service.Init()
 
+	log.DefaultLogger = micro_zerolog.NewLogger(
+		micro_zerolog.UseAsDefault(),
+		log.WithFields(map[string]interface{}{
+			"node":    service.Server().Options().Id,
+			"service": id,
+		}),
+		micro_zerolog.WithTimeFormat(time.RFC3339Nano),
+	)
+
 	if conf != nil {
 		if err := config.Load(sources...); err != nil {
 			return nil, err
@@ -42,3 +54,4 @@ func NewService(id string, conf interface{}, sources ...source.Source) (*Service
 
 	return &Service{service, name, id}, nil
 }
+
