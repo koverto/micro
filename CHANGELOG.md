@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v2.0.0 - 2020-03-06
+
+Previous version should have been v2.0.0 because of breaking change to the
+`Service` struct.
+
+### Added
+
+- `Client` interface
+- `ClientSet` struct
+
 ## v1.3.0 - 2020-03-05
 
 ### Changed
