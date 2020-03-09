@@ -1,3 +1,5 @@
+// Package micro is a wrapper package for common features of microservices based
+// on the go-micro framework.
 package micro
 
 import (

@@ -13,10 +13,14 @@ const requestIDMetadataKey = "request_id"
 
 type ridContextKey struct{}
 
+// ContextWithRequestID returns a context.Context based on the provided
+// context and containing the provided *uuid.UUID representing a request ID.
 func ContextWithRequestID(ctx context.Context, rid *uuid.UUID) context.Context {
 	return context.WithValue(ctx, ridContextKey{}, rid)
 }
 
+// RequestIDFromContext extracts the *uuid.UUID representing the request ID from
+// the provided context.Context.
 func RequestIDFromContext(ctx context.Context) (*uuid.UUID, bool) {
 	id, ok := ctx.Value(ridContextKey{}).(*uuid.UUID)
 	return id, ok
@@ -45,7 +49,12 @@ func requestIDClientWrapper(c client.Client) client.Client {
 	return &_requestIDClientWrapper{c}
 }
 
-func (w *_requestIDClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
+func (w *_requestIDClientWrapper) Call(
+	ctx context.Context,
+	req client.Request,
+	rsp interface{},
+	opts ...client.CallOption,
+) error {
 	if rid, ok := RequestIDFromContext(ctx); ok {
 		ctx = metadata.Set(ctx, requestIDMetadataKey, rid.Uuid.String())
 	}

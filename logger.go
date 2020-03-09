@@ -21,7 +21,7 @@ const (
 	grpcErrorLogKey    = "grpc.error"
 	grpcServiceLogKey  = "grpc.service"
 	grpcSpanLogKey     = "grpc.span"
-	requestIdLogKey    = "request_id"
+	requestIDLogKey    = "request_id"
 	startTimeLogKey    = "start_time"
 )
 
@@ -51,7 +51,12 @@ func logClientWrapper(c client.Client) client.Client {
 	return &_logClientWrapper{c}
 }
 
-func (w *_logClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
+func (w *_logClientWrapper) Call(
+	ctx context.Context,
+	req client.Request,
+	rsp interface{},
+	opts ...client.CallOption,
+) error {
 	event, now := logWrapper(ctx, req)
 	event.Str(grpcSpanLogKey, grpcServiceClient)
 
@@ -69,7 +74,7 @@ func logWrapper(ctx context.Context, req request) (*zerolog.Event, time.Time) {
 	event.Str(grpcServiceLogKey, req.Service())
 
 	if rid, ok := RequestIDFromContext(ctx); ok {
-		event.Str(requestIdLogKey, rid.Uuid.String())
+		event.Str(requestIDLogKey, rid.Uuid.String())
 	}
 
 	return event, now
