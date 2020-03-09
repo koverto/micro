@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 ## Unreleased
 
+## v2.0.1 - 2020-03-09
+
+### Fixed
+
+Fixed import path for version 2.
+
 ## v2.0.0 - 2020-03-06
 
 Previous version should have been v2.0.0 because of breaking change to the

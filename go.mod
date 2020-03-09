@@ -1,4 +1,4 @@
-module github.com/koverto/micro
+module github.com/koverto/micro/v2
 
 go 1.14
 
