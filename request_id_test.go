@@ -89,34 +89,29 @@ func Test_requestIDHandlerWrapper(t *testing.T) {
 		args    args
 	}{
 		{
-			"With a request ID in the metadata",
-			false,
+			"With a request ID in the metadata", false,
 			func(ctx context.Context, req server.Request, rsp interface{}) error {
 				if id, ok := RequestIDFromContext(ctx); !ok {
 					return fmt.Errorf("no request ID in context")
 				} else if id.Uuid.String() != rid.Uuid.String() {
 					return fmt.Errorf("request ID = %v, want %v", id, rid)
 				}
-
 				return nil
 			},
 			args{metadata.Set(context.Background(), requestIDMetadataKey, rid.Uuid.String()), req, nil},
 		},
 		{
-			"Without a request ID in the metadata",
-			false,
+			"Without a request ID in the metadata", false,
 			func(ctx context.Context, req server.Request, rsp interface{}) error {
 				if id, _ := RequestIDFromContext(ctx); id != nil {
 					return fmt.Errorf("expected no request ID in context, got %v", id)
 				}
-
 				return nil
 			},
 			args{context.Background(), req, nil},
 		},
 		{
-			"With an invalid request ID",
-			true,
+			"With an invalid request ID", true,
 			func(_ context.Context, _ server.Request, _ interface{}) error {
 				return nil
 			},
@@ -127,15 +122,10 @@ func Test_requestIDHandlerWrapper(t *testing.T) {
 	for _, tt := range tests {
 		test := tt
 		t.Run(test.name, func(t *testing.T) {
-			fn := requestIDHandlerWrapper(test.fn)
-			err := fn(test.args.ctx, test.args.req, test.args.rsp)
+			err := requestIDHandlerWrapper(test.fn)(test.args.ctx, test.args.req, test.args.rsp)
 
-			if !test.wantErr && err != nil {
-				t.Error(err)
-			}
-
-			if test.wantErr && err == nil {
-				t.Errorf("expected error")
+			if (!test.wantErr && err != nil) || (test.wantErr && err == nil) {
+				t.Errorf("expected error %v, got %v", test.wantErr, err)
 			}
 		})
 	}
@@ -184,11 +174,8 @@ func Test_requestIDClientWrapper_Call(t *testing.T) {
 			m.EXPECT().Call(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Do(
 				func(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) {
 					got, ok := metadata.Get(ctx, requestIDMetadataKey)
-					if !ok && test.want != nil {
-						t.Errorf("Metadata request ID not set")
-					}
-					if ok && test.want == nil {
-						t.Errorf("Metadata request ID unexpectedly set")
+					if (!ok && test.want != nil) || (ok && test.want == nil) {
+						t.Errorf("Metadata request ID ok %v, want %v", ok, test.want)
 					}
 
 					if test.want != nil {
@@ -196,8 +183,6 @@ func Test_requestIDClientWrapper_Call(t *testing.T) {
 						if got != want {
 							t.Errorf("Metadata request ID = %v, want %v", got, want)
 						}
-					} else if got != "" {
-						t.Errorf("Metadata request ID = %v, want empty", got)
 					}
 				},
 			)
