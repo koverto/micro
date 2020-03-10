@@ -2,10 +2,12 @@ package micro
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/koverto/micro/v2/mock_client"
+	mock_client "github.com/koverto/micro/v2/mocks/client"
+	mock_server "github.com/koverto/micro/v2/mocks/server"
 
 	"github.com/golang/mock/gomock"
 	"github.com/koverto/uuid"
@@ -68,38 +70,72 @@ func TestRequestIDFromContext(t *testing.T) {
 }
 
 func Test_requestIDHandlerWrapper(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	type args struct {
+		ctx context.Context
+		req server.Request
+		rsp interface{}
+	}
+
+	rid := uuid.New()
+	req := mock_server.NewMockRequest(ctrl)
+
 	tests := []struct {
-		name string
-		args server.HandlerFunc
-		want server.HandlerFunc
+		name    string
+		wantErr bool
+		fn      server.HandlerFunc
+		args    args
 	}{
-		// TODO: Add test cases.
+		{
+			"With a request ID in the metadata",
+			false,
+			func(ctx context.Context, req server.Request, rsp interface{}) error {
+				if id, ok := RequestIDFromContext(ctx); !ok {
+					return fmt.Errorf("no request ID in context")
+				} else if id.Uuid.String() != rid.Uuid.String() {
+					return fmt.Errorf("request ID = %v, want %v", id, rid)
+				}
+
+				return nil
+			},
+			args{metadata.Set(context.Background(), requestIDMetadataKey, rid.Uuid.String()), req, nil},
+		},
+		{
+			"Without a request ID in the metadata",
+			false,
+			func(ctx context.Context, req server.Request, rsp interface{}) error {
+				if id, _ := RequestIDFromContext(ctx); id != nil {
+					return fmt.Errorf("expected no request ID in context, got %v", id)
+				}
+
+				return nil
+			},
+			args{context.Background(), req, nil},
+		},
+		{
+			"With an invalid request ID",
+			true,
+			func(_ context.Context, _ server.Request, _ interface{}) error {
+				return nil
+			},
+			args{metadata.Set(context.Background(), requestIDMetadataKey, "invalid UUID"), req, nil},
+		},
 	}
 
 	for _, tt := range tests {
 		test := tt
 		t.Run(test.name, func(t *testing.T) {
-			if got := requestIDHandlerWrapper(test.args); !reflect.DeepEqual(got, test.want) {
-				t.Errorf("requestIDHandlerWrapper() = %v, want %v", got, test.want)
+			fn := requestIDHandlerWrapper(test.fn)
+			err := fn(test.args.ctx, test.args.req, test.args.rsp)
+
+			if !test.wantErr && err != nil {
+				t.Error(err)
 			}
-		})
-	}
-}
 
-func Test_requestIDClientWrapper(t *testing.T) {
-	tests := []struct {
-		name string
-		args client.Client
-		want client.Client
-	}{
-		// TODO: Add test cases.
-	}
-
-	for _, tt := range tests {
-		test := tt
-		t.Run(test.name, func(t *testing.T) {
-			if got := requestIDClientWrapper(test.args); !reflect.DeepEqual(got, test.want) {
-				t.Errorf("requestIDClientWrapper() = %v, want %v", got, test.want)
+			if test.wantErr && err == nil {
+				t.Errorf("expected error")
 			}
 		})
 	}
@@ -109,13 +145,6 @@ func Test_requestIDClientWrapper_Call(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	m := mock_client.NewMockClient(ctrl)
-
-	w := &_requestIDClientWrapper{m}
-
-	rid := uuid.New()
-	req := client.NewRequest("svc", "endpoint", nil)
-
 	type args struct {
 		ctx  context.Context
 		req  client.Request
@@ -123,26 +152,35 @@ func Test_requestIDClientWrapper_Call(t *testing.T) {
 		opts []client.CallOption
 	}
 
+	rid := uuid.New()
+	req := client.NewRequest("svc", "endpoint", nil)
+
 	tests := []struct {
 		name    string
-		w       *_requestIDClientWrapper
 		args    args
 		want    *uuid.UUID
 		wantErr bool
 	}{
 		{
 			"With a request ID",
-			w,
 			args{ContextWithRequestID(context.Background(), rid), req, nil, []client.CallOption{}},
 			rid,
 			false,
 		},
-		// {"Without a request ID", w},
+		{
+			"Without a request ID",
+			args{context.Background(), req, nil, []client.CallOption{}},
+			nil,
+			false,
+		},
 	}
 
 	for _, tt := range tests {
 		test := tt
 		t.Run(test.name, func(t *testing.T) {
+			m := mock_client.NewMockClient(ctrl)
+			w := requestIDClientWrapper(m)
+
 			m.EXPECT().Call(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Do(
 				func(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) {
 					got, ok := metadata.Get(ctx, requestIDMetadataKey)
@@ -153,14 +191,18 @@ func Test_requestIDClientWrapper_Call(t *testing.T) {
 						t.Errorf("Metadata request ID unexpectedly set")
 					}
 
-					want := test.want.Uuid.String()
-					if got != want {
-						t.Errorf("Metadata request ID = %v, want %v", got, want)
+					if test.want != nil {
+						want := test.want.Uuid.String()
+						if got != want {
+							t.Errorf("Metadata request ID = %v, want %v", got, want)
+						}
+					} else if got != "" {
+						t.Errorf("Metadata request ID = %v, want empty", got)
 					}
 				},
 			)
 
-			if err := test.w.Call(test.args.ctx, test.args.req, test.args.rsp, test.args.opts...); (err != nil) != test.wantErr {
+			if err := w.Call(test.args.ctx, test.args.req, test.args.rsp, test.args.opts...); (err != nil) != test.wantErr {
 				t.Errorf("_requestIDClientWrapper.Call() error = %v, wantErr %v", err, test.wantErr)
 			}
 		})
