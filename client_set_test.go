@@ -21,10 +21,11 @@ func TestClientSet_NewClientSet(t *testing.T) {
 		{"With a client", []Client{&testClient{}}, 1},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cs := NewClientSet(tt.args...)
-			if got := cs.Length(); got != tt.want {
-				t.Errorf("ClientSet.Length() = %v, want %v", got, tt.want)
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			cs := NewClientSet(test.args...)
+			if got := cs.Length(); got != test.want {
+				t.Errorf("ClientSet.Length() = %v, want %v", got, test.want)
 			}
 		})
 	}
@@ -44,9 +45,10 @@ func TestClientSet_Get(t *testing.T) {
 		{"An invalid key", cs, "invalid", nil},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.Get(tt.args); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ClientSet.Get() = %v, want %v", got, tt.want)
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.c.Get(test.args); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("ClientSet.Get() = %v, want %v", got, test.want)
 			}
 		})
 	}
@@ -64,9 +66,10 @@ func TestClientSet_Keys(t *testing.T) {
 		{"A non-empty ClientSet", NewClientSet(c), []string{c.Name()}},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.Keys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ClientSet.Keys() = %v, want %v", got, tt.want)
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.c.Keys(); !reflect.DeepEqual(got, test.want) {
+				t.Errorf("ClientSet.Keys() = %v, want %v", got, test.want)
 			}
 		})
 	}
